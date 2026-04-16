@@ -1,0 +1,7 @@
+[
+  {  "name": "Alice Morgan",  "grade": "A", "major": "Web Dev"    },
+  {"name": "Ben Carter",    "grade": "B", "major": "Computer Sceience"  },
+  {  "name": "Clara Singh",   "grade": "A", "major": "Communication" },
+  {  "name": "David Osei",     "grade": "C", "major": "Web Dev"    },
+  {  "name": "Eva Müller",    "grade": "B", "major": "Art"  }
+]

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Example 2 — JSON File + fetch()</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --surface2:  #21262d;
+      --border:    #30363d;
+      --accent:    #3fb950;
+      --accent2:   #58a6ff;
+      --amber:     #e3b341;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+    }
+
+    body {
+  
+      background: var(--bg);
+      font-family: 'Sora', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 36px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .badge { background: var(--accent); color: #0d1117; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: .06em; text-transform: uppercase; }
+    header h1 { font-size: 17px; font-weight: 600; }
+    header .sub { font-size: 12px; color: var(--muted); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+
+    main { max-width: 820px; margin: 40px auto; padding: 0 24px; }
+
+    .intro {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .intro strong { color: var(--text); }
+    .intro code {
+      background: var(--surface2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+    }
+
+    /* File tree */
+    .file-tree {
+      background: #0a0f14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 2;
+      color: var(--muted);
+    }
+    .file-tree .folder { color: var(--amber); }
+    .file-tree .json   { color: var(--accent); }
+    .file-tree .js     { color: #e3b341; }
+    .file-tree .html   { color: #f78166; }
+    .file-tree .active { background: #1a3a2a; padding: 0 8px; border-radius: 4px; color: var(--accent); }
+
+    h2 { font-size: 15px; font-weight: 600; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 8px; }
+
+    .run-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 24px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-family: 'Sora', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: var(--accent);
+      color: #0d1117;
+      transition: all .2s;
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .btn-reset {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-reset:hover { border-color: #f78166; color: #f78166; }
+
+    #output {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 14px;
+      min-height: 60px;
+    }
+
+    .placeholder {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 10px 0;
+    }
+
+    .student-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      animation: fadeUp .3s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .student-card:nth-child(1){ animation-delay:.05s }
+    .student-card:nth-child(2){ animation-delay:.10s }
+    .student-card:nth-child(3){ animation-delay:.15s }
+    .student-card:nth-child(4){ animation-delay:.20s }
+    .student-card:nth-child(5){ animation-delay:.25s }
+
+    .avatar { font-size: 26px; margin-bottom: 10px; }
+    .student-card h3 { font-size: 14px; font-weight: 600; }
+    .roll { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--muted); margin: 3px 0 10px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .pill {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+    .grade-A { background:#1a3a2a; color:#3fb950; border:1px solid #3fb95055; }
+    .grade-B { background:#1f3a5c; color:#58a6ff; border:1px solid #58a6ff55; }
+    .grade-C { background:#3a2d1a; color:#e3b341; border:1px solid #e3b34155; }
+    .info    { background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+
+    .note {
+      margin-top: 28px;
+      padding: 14px 18px;
+      background: #1a1a0a;
+      border: 1px solid #3a3010;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #c9b06a;
+      line-height: 1.7;
+    }
+    .note strong { color: var(--amber); }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="badge">02</span>
+  <h1>JSON File + fetch()</h1>
+  <span class="sub">index.html · script.js · students.json</span>
+</header>
+
+<main>
+
+  <div class="intro">
+    <strong>What we are doing:</strong> The data has moved out of JavaScript and into its own
+    <code>students.json</code> file. We use <code>fetch()</code> to load that file,
+    <code>.json()</code> to parse the response, and then the <strong>exact same for loop</strong>
+    as Example 1 to render the cards. The loop does not change — only the data source does.
+  </div>
+
+  <!-- File tree showing the folder -->
+  <div class="file-tree">
+    <div><span class="folder">📁 02_json_file/</span></div>
+    <div>&nbsp;&nbsp;├── <span class="html">index.html</span>  &nbsp;&nbsp;&nbsp;<span style="opacity:.5">← you are here</span></div>
+    <div>&nbsp;&nbsp;├── <span class="js">script.js</span>  &nbsp;&nbsp;&nbsp;&nbsp;<span style="opacity:.5">← fetch() + loop</span></div>
+    <div>&nbsp;&nbsp;└── <span class="json active">students.json</span> <span style="opacity:.5">← the data lives here</span></div>
+  </div>
+
+  <h2>// output renders into ↓ &lt;div id="output"&gt;</h2>
+
+  <div class="run-bar">
+    <button class="btn" onclick="loadStudents()">▶ Fetch & Render</button>
+    <button class="btn-reset" onclick="document.getElementById('output').innerHTML='<p class=\'placeholder\'>Reset — press Fetch & Render again.</p>'">↺ Reset</button>
+  </div>
+
+  <div id="output">
+    <p class="placeholder">Press ▶ Fetch & Render — fetch() will load students.json and build the cards.</p>
+  </div>
+
+  <div class="note">
+    <strong>⚠️ Local server required:</strong> fetch() cannot load files using the <code>file://</code> protocol.
+    Open this folder with <strong>VS Code Live Server</strong> or run <code>npx serve .</code> in the terminal.
+    Without a server, the browser will block the request for security reasons.
+  </div>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
